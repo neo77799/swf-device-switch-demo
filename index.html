@@ -27,9 +27,20 @@
       height: 100%;
     }
   </style>
+
+  <!-- 先にグローバル設定（CDN読み込み前に定義しておく） -->
+  <script>
+    window.RufflePlayer = window.RufflePlayer || {};
+    window.RufflePlayer.config = {
+      autoplay: "on",            // 可能なら即自動再生
+      unmuteOverlay: "hidden",   // ミュート解除オーバーレイも隠す（音声なしでも一応）
+      letterbox: "on"            // 縦横比維持（任意）
+      // showSwfDownload: false, // 必要ならダウンロードボタン非表示
+    };
+  </script>
 </head>
 <body>
-  <!-- フォントはSWF側の埋め込みを使用するため、外部フォント設定は削除済み -->
+  <!-- フォントはSWF側の埋め込みを使用するため、外部フォント設定は無し -->
   <div id="container"></div>
 
   <script>
@@ -50,15 +61,21 @@
       player.style.width = "100%";
       player.style.height = "100%";
 
+      // 個別プレイヤーにも明示的に設定（環境差吸収のため）
+      player.config = {
+        autoplay: "on",
+        unmuteOverlay: "hidden",
+        letterbox: "on"
+      };
+
       document.getElementById("container").appendChild(player);
 
-      // 端末に応じたSWFを読み込み
+      // 端末に応じたSWFを読み込み（音声なし想定）
       const swfPath = pickSwf();
       player.ruffle().load(swfPath);
     });
 
     // 画面回転やリサイズで「スマホ/PC閾値」を跨いだ場合に再読込したい時は以下を有効化
-    // （通常は不要。必要ならコメントアウトを外してください）
     /*
     let currentIsPhone = null;
     function isPhoneNow() {
