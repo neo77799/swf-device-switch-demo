@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Ruffle Switch Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    /* 残りの高さを全部使うコンテナ */
+    #container {
+      flex: 1 1 auto;
+      min-height: 0;            /* Chrome/Safariでのオーバーフロー抑止 */
+      background: #f7f7f7;      /* レターボックス時の背景 */
+    }
+    /* ruffle-player をビューいっぱいに広げる */
+    ruffle-player,
+    #container > ruffle-player {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- フォントはSWF側の埋め込みを使用するため、外部フォント設定は削除済み -->
+  <div id="container"></div>
+
+  <script>
+    // --- 端末/幅に応じて main.swf / main_phone.swf を切り替え ---
+    function pickSwf() {
+      const isPhoneUA = /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent);
+      const isNarrow  = window.matchMedia("(max-width: 768px)").matches;
+      // UA か 幅 がモバイル相当ならスマホ版を優先
+      return (isPhoneUA || isNarrow) ? "./main_phone.swf" : "./main.swf";
+    }
+
+    // --- Ruffle プレイヤー生成＆SWF読み込み ---
+    window.addEventListener("load", () => {
+      const ruffle = window.RufflePlayer.newest();
+      const player = ruffle.createPlayer();
+
+      // 幅/高さを 100%（CSS と二重指定でより確実）
+      player.style.width = "100%";
+      player.style.height = "100%";
+
+      document.getElementById("container").appendChild(player);
+
+      // 端末に応じたSWFを読み込み
+      const swfPath = pickSwf();
+      player.ruffle().load(swfPath);
+    });
+
+    // 画面回転やリサイズで「スマホ/PC閾値」を跨いだ場合に再読込したい時は以下を有効化
+    // （通常は不要。必要ならコメントアウトを外してください）
+    /*
+    let currentIsPhone = null;
+    function isPhoneNow() {
+      return /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent)
+             || window.matchMedia("(max-width: 768px)").matches;
+    }
+    window.addEventListener("resize", () => {
+      const now = isPhoneNow();
+      if (currentIsPhone === null) currentIsPhone = now;
+      if (now !== currentIsPhone) {
+        location.reload(); // 閾値を跨いだらページごと再読込してSWF差し替え
+      }
+    });
+    */
+  </script>
+
+  <!-- Ruffle 本体（CDN）。本番運用は自己ホスト＆バージョン固定推奨 -->
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+</body>
+</html>
